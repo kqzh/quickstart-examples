@@ -174,7 +174,7 @@ Conditions:
     - !Equals [ !Ref StoragedReplicas, '7' ]
   7StoragedCondition: !Equals [!Ref StoragedReplicas, '7']
 Resources:
-  SetupRole:
+  NebulaRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -214,12 +214,12 @@ Resources:
                   - cloudwatch:PutMetricAlarm
                 Resource:
                   - !Sub arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:*
-  SetupRoleProfile:
+  NebulaRoleProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
-        - Ref: SetupRole
+        - Ref: NebulaRole
   StoragedSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -253,8 +253,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref StoragedSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref StoragedInstanceType
         QSS3BucketName: !Ref QSS3BucketName
@@ -270,8 +270,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref StoragedSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref StoragedInstanceType
         QSS3BucketName: !Ref QSS3BucketName
@@ -287,8 +287,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref StoragedSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref StoragedInstanceType
         QSS3BucketName: !Ref QSS3BucketName
@@ -304,8 +304,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref StoragedSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref StoragedInstanceType
         QSS3BucketName: !Ref QSS3BucketName
@@ -321,8 +321,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref StoragedSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref StoragedInstanceType
         QSS3BucketName: !Ref QSS3BucketName
@@ -338,8 +338,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref StoragedSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref StoragedInstanceType
         QSS3BucketName: !Ref QSS3BucketName
@@ -355,8 +355,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref StoragedSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref StoragedInstanceType
         QSS3BucketName: !Ref QSS3BucketName
@@ -372,8 +372,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref StoragedSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref StoragedInstanceType
         QSS3BucketName: !Ref QSS3BucketName

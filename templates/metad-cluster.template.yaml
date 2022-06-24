@@ -165,7 +165,7 @@ Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
   3MetadCondition: !Equals [!Ref MetadReplicas, '3']
 Resources:
-  SetupRole:
+  NebulaRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -205,12 +205,12 @@ Resources:
                   - cloudwatch:PutMetricAlarm
                 Resource:
                   - !Sub arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:*
-  SetupRoleProfile:
+  NebulaRoleProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
-        - Ref: SetupRole
+        - Ref: NebulaRole
   MetadSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -239,8 +239,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref MetadSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref MetadInstanceType
         QSS3BucketName: !Ref QSS3BucketName
@@ -256,8 +256,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref MetadSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref MetadInstanceType
         QSS3BucketName: !Ref QSS3BucketName
@@ -273,8 +273,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref MetadSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref MetadInstanceType
         QSS3BucketName: !Ref QSS3BucketName

@@ -171,7 +171,7 @@ Conditions:
     - !Condition 3GraphdCondition
   3GraphdCondition: !Equals [!Ref GraphdReplicas, '3']
 Resources:
-  SetupRole:
+  NebulaRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -211,12 +211,12 @@ Resources:
                   - cloudwatch:PutMetricAlarm
                 Resource:
                   - !Sub arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:*
-  SetupRoleProfile:
+  NebulaRoleProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
-        - Ref: SetupRole
+        - Ref: NebulaRole
   GraphdSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -250,8 +250,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref GraphdSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref GraphdInstanceType
         QSS3BucketName: !Ref QSS3BucketName
@@ -267,8 +267,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref GraphdSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref GraphdInstanceType
         QSS3BucketName: !Ref QSS3BucketName
@@ -284,8 +284,8 @@ Resources:
         VPCID: !Ref VPCID
         SubnetID: !Ref PublicSubnetID
         SecurityGroupID: !Ref GraphdSecurityGroup
-        IAMRoleName: !Ref SetupRole
-        IAMProfileID: !Ref SetupRoleProfile
+        IAMRoleName: !Ref NebulaRole
+        IAMProfileID: !Ref NebulaRoleProfile
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref GraphdInstanceType
         QSS3BucketName: !Ref QSS3BucketName
