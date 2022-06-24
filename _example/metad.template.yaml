@@ -1,0 +1,182 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This template deploy nbeula metad cluster. (qs-1s1eguak1)
+Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - W9006 # temporary to get rid of warnings
+        - W9002 # temporary to get rid of warnings
+        - W9003 # temporary to get rid of warnings
+        - W9901 # Not passing all the default parameters to reduce verbosity
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Network configuration
+        Parameters:
+          - VPCID
+          - PrivateSubnetID
+          - SecurityGroupID
+      - Label:
+          default: Metad configuration
+        Parameters:
+          - KeyPairName
+          - MetadInstanceType
+      - Label:
+          default: AWS Quick Start configuration
+        Parameters:
+          - QSS3BucketName
+          - QSS3KeyPrefix
+    ParameterLabels:
+      VPCID:
+        default: VPC ID
+      PrivateSubnetID:
+        default: Private subnet ID
+      SecurityGroupID:
+        default: Security group ID
+      KeyPairName:
+        default: SSH key name
+      MetadInstanceType:
+        default: Metad servers instance type
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
+Parameters:
+  KeyPairName:
+    Description: Name of an existing EC2 key pair. All instances will launch with
+      this key pair.
+    Type: AWS::EC2::KeyPair::KeyName
+  PrivateSubnetID:
+    Description: ID of private subnet for the metad (e.g., subnet-a0246dcd).
+    Type: AWS::EC2::Subnet::Id
+  QSS3BucketName:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).
+    Default: aws-quickstart
+    Description: S3 bucket name for the Quick Start assets. This string can include
+      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start
+      or end with a hyphen (-).
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: ^[0-9a-zA-Z-/]*$
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slash (/).
+    Default: quickstart-examples/
+    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
+      can include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/).
+    Type: String
+  VPCID:
+    Description: ID of your existing VPC for deployment.
+    Type: AWS::EC2::VPC::Id
+  MetadInstanceType:
+    AllowedValues:
+      - t2.small
+      - t2.large
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - r3.large
+      - r3.xlarge
+    ConstraintDescription: Must contain valid instance type
+    Default: t2.small
+    Description: Type of EC2 instance for the metad instances.
+    Type: String
+  SecurityGroupID:
+    Description: ID of your existing SecurityGroup for deployment.
+    Type: AWS::EC2::SecurityGroup::Id
+Rules:
+  KeyPairsNotEmpty:
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::EachMemberEquals:
+                - Fn::RefAll: AWS::EC2::KeyPair::KeyName
+                - ''
+        AssertDescription: All key pair parameters must not be empty
+  SubnetsInVPC:
+    Assertions:
+      - Assert:
+          Fn::EachMemberIn:
+            - Fn::ValueOfAll:
+                - AWS::EC2::Subnet::Id
+                - VpcId
+            - Fn::RefAll: AWS::EC2::VPC::Id
+        AssertDescription: All subnets must in the VPC
+Mappings:
+  AWSAMIRegionMap:
+    AMI:
+      AMZNLINUXHVM: amzn-ami-hvm-2018.03.0.20190611-x86_64-gp2
+    ap-northeast-1:
+      AMZNLINUXHVM: ami-02ddf94e5edc8e904
+    ap-northeast-2:
+      AMZNLINUXHVM: ami-0ecd78c22823e02ef
+    ap-south-1:
+      AMZNLINUXHVM: ami-05695932c5299858a
+    ap-southeast-1:
+      AMZNLINUXHVM: ami-043afc2b8b6cfba5c
+    ap-southeast-2:
+      AMZNLINUXHVM: ami-01393ce9a3ca55d67
+    ca-central-1:
+      AMZNLINUXHVM: ami-0fa94ecf2fef3420b
+    eu-central-1:
+      AMZNLINUXHVM: ami-0ba441bdd9e494102
+    eu-west-1:
+      AMZNLINUXHVM: ami-0e61341fa75fcaa18
+    eu-west-2:
+      AMZNLINUXHVM: ami-050b8344d77081f4b
+    sa-east-1:
+      AMZNLINUXHVM: ami-05b7dbc290217250d
+    us-east-1:
+      AMZNLINUXHVM: ami-0e2ff28bfb72a4e45
+    us-east-2:
+      AMZNLINUXHVM: ami-0998bf58313ab53da
+    us-west-1:
+      AMZNLINUXHVM: ami-021bb9f371690f97a
+    us-west-2:
+      AMZNLINUXHVM: ami-079f731edfe27c29c
+Conditions:
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
+Resources:
+  MetadSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow access to the Metad instances
+      VpcId:
+        Ref: VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 19559
+          ToPort: 19559
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+        - IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+  MetadInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+
+Outputs:
+  MetadInstance:
+    Description: MetadInstance reference ID.
+    Value: !Ref MetadInstance

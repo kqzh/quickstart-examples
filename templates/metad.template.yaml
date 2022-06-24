@@ -1,0 +1,246 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This template deploy nbeula metad instance.
+Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - W9006 # temporary to get rid of warnings
+        - W9002 # temporary to get rid of warnings
+        - W9003 # temporary to get rid of warnings
+        - W9901 # Not passing all the default parameters to reduce verbosity
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Network configuration
+        Parameters:
+          - VPCID
+          - SubnetID
+          - SecurityGroupID
+      - Label:
+          default: Metad configuration
+        Parameters:
+          - IAMRoleName
+          - IAMProfileID
+          - KeyPairName
+          - InstanceType
+      - Label:
+          default: AWS Quick Start configuration
+        Parameters:
+          - QSS3BucketName
+          - QSS3KeyPrefix
+    ParameterLabels:
+      VPCID:
+        default: VPC ID
+      SubnetID:
+        default: Subnet ID
+      SecurityGroupID:
+        default: Security group ID
+      KeyPairName:
+        default: SSH key name
+      InstanceType:
+        default: Metad servers instance type
+      IAMRoleName:
+        default: Metad IAM Role Name
+      IAMProfileID:
+        default: Metad IAM profile ID
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
+Parameters:
+  VPCID:
+    Description: ID of your existing VPC for deployment.
+    Type: AWS::EC2::VPC::Id
+  SubnetID:
+    Description: ID of existing subnet for the metad (e.g., subnet-a0246dcd).
+    Type: AWS::EC2::Subnet::Id
+  SecurityGroupID:
+    Description: ID of your existing SecurityGroup for deployment.
+    Type: AWS::EC2::SecurityGroup::Id
+  IAMRoleName:
+    Description: Name of the Metad IAM Role
+    Type: String
+  IAMProfileID:
+    Description: ID of the Metad IAM Profile
+    Type: String
+  KeyPairName:
+    Description: Name of an existing EC2 key pair. All instances will launch with
+      this key pair.
+    Type: AWS::EC2::KeyPair::KeyName
+  InstanceType:
+    AllowedValues:
+      - t2.small
+      - t2.large
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - r3.large
+      - r3.xlarge
+    ConstraintDescription: Must contain valid instance type
+    Default: t2.small
+    Description: Type of EC2 instance for the metad instances.
+    Type: String
+  QSS3BucketName:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).
+    Default: aws-quickstart
+    Description: S3 bucket name for the Quick Start assets. This string can include
+      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start
+      or end with a hyphen (-).
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: ^[0-9a-zA-Z-/]*$
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slash (/).
+    Default: quickstart-examples/
+    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
+      can include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/).
+    Type: String
+Rules:
+  KeyPairsNotEmpty:
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::EachMemberEquals:
+                - Fn::RefAll: AWS::EC2::KeyPair::KeyName
+                - ''
+        AssertDescription: All key pair parameters must not be empty
+  SubnetsInVPC:
+    Assertions:
+      - Assert:
+          Fn::EachMemberIn:
+            - Fn::ValueOfAll:
+                - AWS::EC2::Subnet::Id
+                - VpcId
+            - Fn::RefAll: AWS::EC2::VPC::Id
+        AssertDescription: All subnets must in the VPC
+Mappings:
+  AWSAMIRegionMap:
+    AMI:
+      AMZNLINUXHVM: amzn-ami-hvm-2018.03.0.20190611-x86_64-gp2
+    ap-northeast-1:
+      AMZNLINUXHVM: ami-02ddf94e5edc8e904
+    ap-northeast-2:
+      AMZNLINUXHVM: ami-0ecd78c22823e02ef
+    ap-south-1:
+      AMZNLINUXHVM: ami-05695932c5299858a
+    ap-southeast-1:
+      AMZNLINUXHVM: ami-043afc2b8b6cfba5c
+    ap-southeast-2:
+      AMZNLINUXHVM: ami-01393ce9a3ca55d67
+    ca-central-1:
+      AMZNLINUXHVM: ami-0fa94ecf2fef3420b
+    eu-central-1:
+      AMZNLINUXHVM: ami-0ba441bdd9e494102
+    eu-west-1:
+      AMZNLINUXHVM: ami-0e61341fa75fcaa18
+    eu-west-2:
+      AMZNLINUXHVM: ami-050b8344d77081f4b
+    sa-east-1:
+      AMZNLINUXHVM: ami-05b7dbc290217250d
+    us-east-1:
+      AMZNLINUXHVM: ami-0e2ff28bfb72a4e45
+    us-east-2:
+      AMZNLINUXHVM: ami-0998bf58313ab53da
+    us-west-1:
+      AMZNLINUXHVM: ami-021bb9f371690f97a
+    us-west-2:
+      AMZNLINUXHVM: ami-079f731edfe27c29c
+Conditions:
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
+Resources:
+  MetadInstance:
+    Type: AWS::EC2::Instance
+    Metadata:
+      'AWS::CloudFormation::Authentication':
+        S3AccessCreds:
+          type: S3
+          roleName: !Ref IAMRoleName
+          buckets:
+            - !If [ UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName ]
+      AWS::CloudFormation::Init:
+        config:
+          files:
+            /tmp/nebula-install.sh:
+              source: !Sub
+                - 'https://${S3Bucket}.s3.${AWS::Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/nebula-install.sh'
+                - S3Bucket: !If
+                    - UsingDefaultBucket
+                    - !Sub 'aws-quickstart-${AWS::Region}'
+                    - !Ref QSS3BucketName
+              mode: '000550'
+              owner: root
+              group: root
+            /tmp/vm-disk-utils.sh:
+              source: !Sub
+                - 'https://${S3Bucket}.s3.${AWS::Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/vm-disk-utils.sh'
+                - S3Bucket: !If
+                    - UsingDefaultBucket
+                    - !Sub 'aws-quickstart-${AWS::Region}'
+                    - !Ref QSS3BucketName
+              mode: '000550'
+              owner: root
+              group: root
+            /tmp/nebula-download:
+              source: !Sub
+                - 'https://${S3Bucket}.s3.${AWS::Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/nebula-download'
+                - S3Bucket: !If
+                    - UsingDefaultBucket
+                    - !Sub 'aws-quickstart-${AWS::Region}'
+                    - !Ref QSS3BucketName
+              mode: '000550'
+              owner: root
+              group: root
+        commands:
+          01-install-nebula:
+            cwd: '/tmp/'
+            command: './nebula-install.sh -c metad'
+    Properties:
+      KeyName: !Ref KeyPairName
+      ImageId: !FindInMap
+        - AWSAMIRegionMap
+        - !Ref 'AWS::Region'
+        - AMZNLINUXHVM
+      IamInstanceProfile: !Ref IAMProfileID
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !Ref SecurityGroupID
+      SubnetId: !Ref SubnetID
+      UserData:
+        !Base64
+        Fn::Sub: |
+          #!/bin/bash
+          
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource MetadInstance --region ${AWS::Region}
+
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource GraphdInstance --region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: "PT10M"
+Outputs:
+  PrivateIp:
+    Description: Private IP Address of Metad Instance
+    Value: !GetAtt MetadInstance.PrivateIp
+  InstanceID:
+    Description: ID of Metad Instance
+    Value: !Ref MetadInstance
